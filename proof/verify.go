@@ -147,8 +147,10 @@ func RootFromConsistencyProof(hasher merkle.LogHasher, size1, size2 uint64, proo
 		return nil, err
 	}
 
-	// Verify the second root.
-	hash2 := chainInner(hasher, seed, proof[:inner], mask)
+	// Verify the second root. The inner path only spans the levels strictly
+	// below the fork, so restrict the chaining index to those low levels; the
+	// upper subtrees are new (right-hand) and are folded by the border step.
+	hash2 := chainInner(hasher, seed, proof[:inner], mask&(1<<3-1))
 	hash2 = chainBorderRight(hasher, hash2, proof[inner:])
 	return hash2, nil
 }
